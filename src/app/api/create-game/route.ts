@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const apiKey = process.env.OPENAI_API_KEY;
+
+if (!apiKey) {
+  throw new Error(
+    "OPENAI_API_KEY saknas i env. Lägg den i .env.local lokalt (OPENAI_API_KEY=...) och i hostens env senare."
+  );
+}
+
+const client = new OpenAI({ apiKey });
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,7 +52,7 @@ Ingen annan text.
 
     const text = completion.choices[0]?.message?.content ?? "{}";
 
-    let game;
+    let game: any;
     try {
       game = JSON.parse(text);
     } catch {

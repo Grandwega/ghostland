@@ -41,45 +41,19 @@ export default function HomePage() {
     setCopied(false);
 
     try {
-      const text = idea.trim();
-      const lower = text.toLowerCase();
+      const res = await fetch("/api/create-game", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea }),
+      });
 
-      // Liten "AI-känsla"
-      await new Promise((r) => setTimeout(r, 700));
+      const data = await res.json();
 
-      const hasNeon = lower.includes("neon");
-      const hasObby = lower.includes("obby");
-      const hasCoin = lower.includes("coin");
-      const hasHard = lower.includes("svår") || lower.includes("hard");
-      const hasEasy = lower.includes("lätt") || lower.includes("easy");
+      if (!res.ok) {
+        throw new Error(data?.error || "Serverfel");
+      }
 
-      const generated: GameData = {
-        title: hasNeon
-          ? "Neon Obby: Ljusbanan"
-          : hasObby
-          ? "Ghostland Obby Challenge"
-          : "Ghostland Adventure",
-        genre: hasObby ? "obby" : "platformer",
-        theme: hasNeon ? "neon cyberpunk" : "fantasy",
-        objective: `Byggt från idé: "${text}"`,
-        coreMechanics: [
-          "precision hopping",
-          hasCoin ? "coinsamling" : "poängjakt",
-          "checkpoint-system",
-        ],
-        difficulty: hasHard ? "hard" : hasEasy ? "easy" : "medium",
-        map: {
-          size: "medium",
-          zones: ["Bana 1", "Bana 2", "Bana 3"],
-        },
-        systems: {
-          coins: hasCoin || hasObby,
-          enemies: 0,
-          timeLimitSec: hasHard ? 180 : 240,
-        },
-      };
-
-      setGame(generated);
+      setGame(data.game);
     } catch (e: any) {
       setError(e?.message || "Fel");
     } finally {
