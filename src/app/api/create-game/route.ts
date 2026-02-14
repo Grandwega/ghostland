@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-export const runtime = "nodejs"; // viktigt på Vercel (OpenAI SDK kör Node, inte Edge)
-
-const apiKey = process.env.OPENAI_API_KEY;
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "OPENAI_API_KEY saknas på servern (Vercel env var)." },
@@ -57,7 +56,6 @@ Ingen annan text.
 
     const text = completion.choices[0]?.message?.content?.trim() ?? "";
 
-    // Om modellen råkar svara med ```json ... ``` så strippar vi
     const cleaned = text
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
