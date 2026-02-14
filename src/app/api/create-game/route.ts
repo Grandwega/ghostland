@@ -1,23 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
+export const runtime = "nodejs"; // viktigt på Vercel (OpenAI SDK kör Node, inte Edge)
+
 const apiKey = process.env.OPENAI_API_KEY;
-
-if (!apiKey) {
-  throw new Error(
-    "OPENAI_API_KEY saknas i env. Lägg den i .env.local lokalt (OPENAI_API_KEY=...) och i hostens env senare."
-  );
-}
-
-const client = new OpenAI({ apiKey });
 
 export async function POST(req: NextRequest) {
   try {
-    const { idea } = await req.json();
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "OPENAI_API_KEY saknas på servern (Vercel env var)." },
+        { status: 500 }
+      );
+    }
+
+    const body = await req.json().catch(() => null);
+    const idea = body?.idea;
 
     if (!idea || typeof idea !== "string") {
       return NextResponse.json({ error: "Spelidé saknas" }, { status: 400 });
     }
+
+    const client = new OpenAI({ apiKey });
 
     const system = `
 Du är en spel-designer.
@@ -44,17 +48,25 @@ Ingen annan text.
 
     const completion = await client.chat.completions.create({
       model: "gpt-5-mini",
+      temperature: 0.7,
       messages: [
-        { role: "system", content: system },
-        { role: "user", content: idea },
+        { role: "system", content: system.trim() },
+        { role: "user", content: idea.trim() },
       ],
     });
 
-    const text = completion.choices[0]?.message?.content ?? "{}";
+    const text = completion.choices[0]?.message?.content?.trim() ?? "";
+
+    // Om modellen råkar svara med ```json ... ``` så strippar vi
+    const cleaned = text
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/```$/i, "")
+      .trim();
 
     let game: any;
     try {
-      game = JSON.parse(text);
+      game = JSON.parse(cleaned);
     } catch {
       return NextResponse.json(
         { error: "AI-svaret var inte giltig JSON", raw: text },
@@ -62,7 +74,7 @@ Ingen annan text.
       );
     }
 
-    return NextResponse.json({ game });
+    return NextResponse.json({ game }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json(
       { error: e?.message ?? "Okänt serverfel" },
