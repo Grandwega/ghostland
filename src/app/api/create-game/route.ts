@@ -47,7 +47,6 @@ Ingen annan text.
 
     const completion = await client.chat.completions.create({
       model: "gpt-5-mini",
-      temperature: 1,
       messages: [
         { role: "system", content: system.trim() },
         { role: "user", content: idea.trim() },
