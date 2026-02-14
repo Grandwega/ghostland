@@ -48,7 +48,7 @@ export default function HomePage() {
       });
 
       const contentType = res.headers.get("content-type") || "";
-      const raw = await res.text();
+      const raw = await res.text(); // läs alltid text först
 
       let data: any = null;
       if (contentType.includes("application/json")) {
@@ -132,10 +132,7 @@ export default function HomePage() {
               </div>
 
               <div className="flex gap-2">
-                <button
-                  onClick={copyJson}
-                  className="px-4 py-2 rounded-xl border"
-                >
+                <button onClick={copyJson} className="px-4 py-2 rounded-xl border">
                   {copied ? "Kopierad!" : "Kopiera JSON"}
                 </button>
               </div>
@@ -143,16 +140,12 @@ export default function HomePage() {
 
             <div className="mt-4 grid gap-3">
               <div>
-                <div className="text-xs uppercase text-neutral-500">
-                  Objective
-                </div>
+                <div className="text-xs uppercase text-neutral-500">Objective</div>
                 <div className="text-sm">{game.objective}</div>
               </div>
 
               <div>
-                <div className="text-xs uppercase text-neutral-500">
-                  Core mechanics
-                </div>
+                <div className="text-xs uppercase text-neutral-500">Core mechanics</div>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {game.coreMechanics.map((m) => (
                     <span
@@ -174,17 +167,11 @@ export default function HomePage() {
                 </div>
                 <div className="border rounded-xl p-3">
                   <div className="text-xs uppercase text-neutral-500">Coins</div>
-                  <div className="text-sm mt-1">
-                    {game.systems.coins ? "På" : "Av"}
-                  </div>
+                  <div className="text-sm mt-1">{game.systems.coins ? "På" : "Av"}</div>
                 </div>
                 <div className="border rounded-xl p-3">
-                  <div className="text-xs uppercase text-neutral-500">
-                    Time limit
-                  </div>
-                  <div className="text-sm mt-1">
-                    {game.systems.timeLimitSec}s
-                  </div>
+                  <div className="text-xs uppercase text-neutral-500">Time limit</div>
+                  <div className="text-sm mt-1">{game.systems.timeLimitSec}s</div>
                 </div>
               </div>
             </div>
